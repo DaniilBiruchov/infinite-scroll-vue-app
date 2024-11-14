@@ -20,12 +20,25 @@ const getUsers = async () => {
   if (loader.value) observer.observe(loader.value);
 };
 
+const throttle = (func, delay) => {
+  let lastCall = 0;
+
+  return function () {
+    const now = Date.now();
+    if (now - lastCall < delay) return;
+    lastCall = now;
+    return func();
+  };
+};
+
+const throttledGetUsers = throttle(getUsers, 250);
+
 const observer = new IntersectionObserver(([entries]) => {
-  if (entries.isIntersecting && !loading.value) getUsers();
+  if (entries.isIntersecting && !loading.value) throttledGetUsers();
 });
 
 onMounted(async () => {
-  await getUsers();
+  await throttledGetUsers();
   if (loader.value) observer.observe(loader.value);
 });
 
